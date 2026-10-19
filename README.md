@@ -2,7 +2,7 @@
 
 面向本机 Strata 推理服务的 Windows 原生监控器与启动器。使用 C++17、Win32、GDI+ 和 WinHTTP，不嵌入浏览器、WebView、Electron 或 Python GUI。
 
-[下载 v0.5.1](https://github.com/HHFu517/strata-monitor/releases/tag/v0.5.1) · [更新记录](CHANGELOG.md) · [构建与测试](docs/TESTING.md) · [MIT 许可](LICENSE)
+[下载 v0.5.2](https://github.com/HHFu517/strata-monitor/releases/tag/v0.5.2) · [更新记录](CHANGELOG.md) · [构建与测试](docs/TESTING.md) · [MIT 许可](LICENSE)
 
 这是独立、非官方的配套工具，**不是推理引擎，也不包含 Strata、模型、Python 环境或 GPU 驱动**。目前按下述固定目录结构集成，已在 Strata **v0.1.43.1** 的本机部署中验证；其他版本的接口和目录兼容性尚未确认。
 
@@ -36,7 +36,7 @@
 - 启动/停止功能使用下述目录和文件名；托管启动复用 Strata 现有的 Python `.venv`，不创建或更新运行环境。
 - 目前只支持无 API 密钥的本机接口，不提供远程主机、鉴权或任意模型预设编辑界面。
 
-下载 Release 中的 `StrataMonitor-v0.5.1-windows-x64.zip`，解压到 Strata 部署根目录，形成：
+下载 Release 中的 `StrataMonitor-v0.5.2-windows-x64.zip`，解压到 Strata 部署根目录，形成：
 
 ```text
 <StrataRoot>/
@@ -61,12 +61,13 @@
 Release 附带 `SHA256SUMS.txt`。可使用 PowerShell 核对 ZIP 的 SHA256；哈希用于检查下载完整性，不等于代码签名：
 
 ```powershell
-Get-FileHash ./StrataMonitor-v0.5.1-windows-x64.zip -Algorithm SHA256
+Get-FileHash ./StrataMonitor-v0.5.2-windows-x64.zip -Algorithm SHA256
 ```
 
 ### 启动与关闭的区别
 
 - 每次打开先显示启动页；已有就绪服务点击“进入监控”，不会因为打开 Monitor 而重启模型。
+- 托管启动不自动打开网页（不受 `open_browser=true` 影响）；需要时从菜单选择“打开网页”。原 CLI 行为不变。
 - 右上角 **×**、Esc、Alt+F4 只收进托盘。
 - **Ctrl+Q / 退出界面，后台继续** 只退出 GUI，不发起新的 Stop。此前已经确认的停止清理仍可继续完成。
 - **停止服务** 才会在确认后清理后台；这会丢失模型缓存，也可能中断请求。

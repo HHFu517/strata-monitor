@@ -38,7 +38,7 @@ struct App {
     HWND window=nullptr,tooltip=nullptr,buttons[4]{},stopButton=nullptr;
     bool stopEnabled=false,stopArmed=false,externalLive=false;ULONGLONG portChecked=0;
     HICON icon=nullptr; unsigned dpi=96; int hot=0;
-    bool tray=false,quitting=false,launcher=false,manualLauncher=false,wasOwned=false,blockAttach=false,readyValidated=false,pendingBrowser=false,hasMonitored=false;
+    bool tray=false,quitting=false,launcher=false,manualLauncher=false,wasOwned=false,blockAttach=false,readyValidated=false,hasMonitored=false;
     ULONGLONG readyAfter=0;
     HWND launchButtons[5]{};
     LauncherState launch;
@@ -239,7 +239,6 @@ void App::UpdateLifecycle(bool packet) {
             if(missing){hasMonitored=false;SetPage(true);}
         }
     }
-    if(pendingBrowser && launch.ready){pendingBrowser=false;Open(L"http://127.0.0.1:"+std::to_wstring(settings.port)+L"/");}
     // A live /metrics answer proves the service; only a quiet port re-checks the listener table.
     const bool stopping=i.phase==ServicePhase::Stopping;
     if(!i.owned) {
@@ -278,7 +277,7 @@ void App::StopRequested() {
         +L"\n\n监控仅在终端没有无关进程时发送 Ctrl+C；否则先请求释放模型，再定向结束已验证的进程。"+
         L"\n当前请求会中断，模型、内存、显存和提示词缓存都会丢失。\n\n确定停止？";
     if(MessageBoxW(window,warning.c_str(),L"停止本机 Strata 服务",MB_YESNO|MB_ICONWARNING|MB_DEFBUTTON2)!=IDYES)return;
-    manualLauncher=false;pendingBrowser=false;blockAttach=false;hasMonitored=false;readyValidated=false;
+    manualLauncher=false;blockAttach=false;hasMonitored=false;readyValidated=false;
     if(service->StopExternal()){SetPage(true);UpdateLifecycle();}
 }
 void App::CommandId(int id) {
@@ -291,7 +290,7 @@ void App::CommandId(int id) {
         if(service && info.owned)StopManaged();
         else if(launch.ready)SetPage(false,true);
         else if(service && info.foreign && info.phase==ServicePhase::Failed)StopRequested();
-        else if(launch.actionEnabled && service){manualLauncher=false;readyValidated=false;pendingBrowser=false;blockAttach=false;readyAfter=GetTickCount64();service->Start(settings.preset);SetPage(true);UpdateLifecycle();}
+        else if(launch.actionEnabled && service){manualLauncher=false;readyValidated=false;blockAttach=false;readyAfter=GetTickCount64();service->Start(settings.preset);SetPage(true);UpdateLifecycle();}
     }
     else if(id==StopService || id==StopControl)StopRequested();
     else if(id==LogAction || id==OpenLog)Open(launch.log);
@@ -437,7 +436,7 @@ LRESULT CALLBACK WindowProc(HWND window,UINT msg,WPARAM wp,LPARAM lp) {
         app->UpdateLifecycle(true);return 0;
     }
     case WM_SERVICE:app->UpdateLifecycle();return 0;
-    case WM_SERVICE_BROWSER:app->pendingBrowser=true;app->UpdateLifecycle();return 0;
+    case WM_SERVICE_BROWSER:return 0; // Ignore legacy automatic requests; manual OpenWeb remains available.
     case WM_TRAY: {
         UINT event=LOWORD(lp);
         if(event==NIN_SELECT || event==NIN_KEYSELECT)app->Reveal();

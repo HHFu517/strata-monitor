@@ -189,13 +189,12 @@ def run(args):
                 if K.WaitForSingleObject(parent,0xffffffff)==0:os._exit(1)
         threading.Thread(target=control,name='launcher-stop',daemon=True).start()
         import webbrowser
-        def open_browser(url,*unused,**kwargs):
-            if url not in (f'http://127.0.0.1:{port}/',f'http://localhost:{port}/'):return False
-            return bool(K.SetEvent(browser)) # GUI opens it outside the model job.
+        def open_browser(*unused,**kwargs):
+            # Managed startup never opens a browser; use the GUI's manual menu.
+            return False
         webbrowser.open=open_browser
         os.chdir(root/'app');sys.path.insert(0,str(root/'app'))
         sys.argv=[str(server),'--engine','strata','--config',str(expected_config),'--host',cfg['host'],'--port',str(port)]
-        if cfg.get('open_browser',False):sys.argv.append('--open')
         if K.WaitForSingleObject(stop,0)==0:raise KeyboardInterrupt
         print('[launcher] starting existing Strata service; no console window',flush=True)
         import runpy
